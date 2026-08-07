@@ -7,11 +7,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table; // <<< Added Import
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 @Entity
+@Table(name = "users") // <<< Added Table Name Fix
 public class User {
 
     @Id
@@ -33,6 +35,9 @@ public class User {
     @NotBlank(message = "Password is required")
     private String password;
     
+    @JsonManagedReference
+    @OneToOne(mappedBy = "user")
+    private Account account;
 
     // Default Constructor
     public User() {
@@ -89,9 +94,7 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    @JsonManagedReference
-    @OneToOne(mappedBy = "user")
-    private Account account;
+
     public Account getAccount() {
         return account;
     }
