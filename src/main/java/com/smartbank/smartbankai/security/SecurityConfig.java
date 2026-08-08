@@ -36,38 +36,40 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                .authorizeHttpRequests(auth -> auth
+               
+            .authorizeHttpRequests(auth -> auth
 
-                        // Public APIs
-                        .requestMatchers(
-                                "/user/register",
-                                "/user/login",
-                                "/admin/login"
-                        ).permitAll()
+        // Public APIs
+        .requestMatchers(
+                "/user/test",
+                "/user/register",
+                "/user/login",
+                "/admin/login"
+        ).permitAll()
 
-                        // Admin APIs
-                        .requestMatchers("/admin/**")
-                        .hasAuthority("ADMIN")
+        // Admin APIs
+        .requestMatchers("/admin/**")
+        .hasAuthority("ADMIN")
 
-                        // User APIs
-                        .requestMatchers(
-                                "/account/**",
-                                "/transaction/**",
-                                "/dashboard/**"
-                        )
-                        .hasAuthority("USER")
+        // User APIs
+        .requestMatchers(
+                "/account/**",
+                "/transaction/**",
+                "/dashboard/**"
+        )
+        .hasAuthority("USER")
 
-                        // User Profile APIs
-                        .requestMatchers(
-                                "/user/profile",
-                                "/user/update/**",
-                                "/user/delete/**"
-                        )
-                        .hasAuthority("USER")
+        // User Profile APIs
+        .requestMatchers(
+                "/user/profile",
+                "/user/update/**",
+                "/user/delete/**"
+        )
+        .hasAuthority("USER")
 
-                        // Everything else
-                        .anyRequest()
-                        .authenticated())
+        // Everything else
+        .anyRequest()
+        .authenticated())
 
                 .authenticationProvider(authenticationProvider())
 
