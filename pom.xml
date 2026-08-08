@@ -55,13 +55,13 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- MySQL Connector -->
+		<!-- PostgreSQL Driver -->
 		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<scope>runtime</scope>
+   			 <groupId>org.postgresql</groupId>
+   			 <artifactId>postgresql</artifactId>
+   			 <scope>runtime</scope>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
