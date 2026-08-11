@@ -23,7 +23,7 @@ import com.smartbank.smartbankai.security.JwtService;
 import com.smartbank.smartbankai.service.UserService;
 
 import jakarta.validation.Valid;
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/user")
 public class UserController {
