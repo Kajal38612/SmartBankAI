@@ -1,11 +1,12 @@
 package com.smartbank.smartbankai.security;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,6 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class SecurityConfig {
@@ -20,8 +24,10 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final CustomUserDetailsService customUserDetailsService;
 
-    public SecurityConfig(JwtFilter jwtFilter,
-                          CustomUserDetailsService customUserDetailsService) {
+    public SecurityConfig(
+            JwtFilter jwtFilter,
+            CustomUserDetailsService customUserDetailsService) {
+
         this.jwtFilter = jwtFilter;
         this.customUserDetailsService = customUserDetailsService;
     }
@@ -33,50 +39,100 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
 
+                // CORS enabled
+                .cors(cors -> {})
+
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS))
 
-               
-            .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-        // Public APIs
-        .requestMatchers(
-                "/user/test",
-                "/user/register",
-                "/user/login",
-                "/admin/login"
-        ).permitAll()
+                        // Allow browser preflight requests
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
 
-        // Admin APIs
-        .requestMatchers("/admin/**")
-        .hasAuthority("ADMIN")
+                        // Public APIs
+                        .requestMatchers(
+                                "/user/test",
+                                "/user/register",
+                                "/user/login",
+                                "/admin/login"
+                        ).permitAll()
 
-        // User APIs
-        .requestMatchers(
-                "/account/**",
-                "/transaction/**",
-                "/dashboard/**"
-        )
-        .hasAuthority("USER")
+                        // Admin APIs
+                        .requestMatchers("/admin/**")
+                        .hasAuthority("ADMIN")
 
-        // User Profile APIs
-        .requestMatchers(
-                "/user/profile",
-                "/user/update/**",
-                "/user/delete/**"
-        )
-        .hasAuthority("USER")
+                        // User APIs
+                        .requestMatchers(
+                                "/account/**",
+                                "/transaction/**",
+                                "/dashboard/**"
+                        )
+                        .hasAuthority("USER")
 
-        // Everything else
-        .anyRequest()
-        .authenticated())
+                        // User Profile APIs
+                        .requestMatchers(
+                                "/user/profile",
+                                "/user/update/**",
+                                "/user/delete/**"
+                        )
+                        .hasAuthority("USER")
+
+                        // Everything else
+                        .anyRequest()
+                        .authenticated()
+                )
 
                 .authenticationProvider(authenticationProvider())
 
-                .addFilterBefore(jwtFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
+    }
+
+    // CORS Configuration
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:5173")
+        );
+
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                List.of("*")
+        );
+
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration(
+                "/**",
+                configuration
+        );
+
+        return source;
     }
 
     @Bean
@@ -91,9 +147,13 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider =
                 new DaoAuthenticationProvider();
 
-        provider.setUserDetailsService(customUserDetailsService);
+        provider.setUserDetailsService(
+                customUserDetailsService
+        );
 
-        provider.setPasswordEncoder(passwordEncoder());
+        provider.setPasswordEncoder(
+                passwordEncoder()
+        );
 
         return provider;
     }
