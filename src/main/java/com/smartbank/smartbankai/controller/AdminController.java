@@ -39,10 +39,10 @@ public class AdminController {
     }
 
     // All Users
-    @GetMapping("/users")
-    public List<User> getAllUsers() {
+   @GetMapping("/users")
+    public List<UserDTO> getAllUsers() {
 
-        return adminService.getAllUsers();
+    return adminService.getAllUsers();
     }
 
     // All Accounts
