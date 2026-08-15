@@ -5,6 +5,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,12 +29,13 @@ public class AccountController {
 
     @Autowired
     private AccountService accountService;
+
     @Autowired
     private JwtService jwtService;
 
     @Autowired
     private UserRepository userRepository;
-   
+
     @PostMapping("/create")
     public Account createAccount(
             @RequestBody AccountRequest request,
@@ -44,12 +47,6 @@ public class AccountController {
 
         return accountService.createAccount(request, email);
     }
-
-//    @GetMapping("/all")
-//    public List<Account> getAllAccounts() {
-//
-//        return accountService.getAllAccounts();
-//    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Account> getAccountById(
@@ -63,7 +60,8 @@ public class AccountController {
         User loggedInUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Optional<Account> optionalAccount = accountService.getAccountById(id);
+        Optional<Account> optionalAccount =
+                accountService.getAccountById(id);
 
         if (optionalAccount.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -71,7 +69,14 @@ public class AccountController {
 
         Account account = optionalAccount.get();
 
-        if (!account.getUser().getId().equals(loggedInUser.getId())) {
+        // Check whether logged-in user is ADMIN
+        boolean isAdmin = isAdmin();
+
+        // USER can access only own account
+        // ADMIN can access any account
+        if (!isAdmin &&
+                !account.getUser().getId().equals(loggedInUser.getId())) {
+
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -91,7 +96,8 @@ public class AccountController {
         User loggedInUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Optional<Account> optionalAccount = accountService.getAccountById(id);
+        Optional<Account> optionalAccount =
+                accountService.getAccountById(id);
 
         if (optionalAccount.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -99,7 +105,14 @@ public class AccountController {
 
         Account existingAccount = optionalAccount.get();
 
-        if (!existingAccount.getUser().getId().equals(loggedInUser.getId())) {
+        boolean isAdmin = isAdmin();
+
+        // USER can update only own account
+        // ADMIN can update any account
+        if (!isAdmin &&
+                !existingAccount.getUser().getId()
+                        .equals(loggedInUser.getId())) {
+
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -123,7 +136,8 @@ public class AccountController {
         User loggedInUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Optional<Account> optionalAccount = accountService.getAccountById(id);
+        Optional<Account> optionalAccount =
+                accountService.getAccountById(id);
 
         if (optionalAccount.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -131,12 +145,35 @@ public class AccountController {
 
         Account account = optionalAccount.get();
 
-        if (!account.getUser().getId().equals(loggedInUser.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
+        boolean isAdmin = isAdmin();
+
+        // USER can close only own account
+        // ADMIN can close any account
+        if (!isAdmin &&
+                !account.getUser().getId()
+                        .equals(loggedInUser.getId())) {
+
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body("Access Denied");
         }
 
         accountService.closeAccount(id);
 
         return ResponseEntity.ok("Account closed successfully.");
+    }
+
+    // Check whether currently logged-in user is ADMIN
+    private boolean isAdmin() {
+
+        Authentication authentication =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication();
+
+        return authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        "ADMIN".equals(authority.getAuthority()));
     }
 }
