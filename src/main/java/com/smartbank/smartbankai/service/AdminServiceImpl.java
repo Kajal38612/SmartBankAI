@@ -96,10 +96,25 @@ public class AdminServiceImpl implements AdminService {
     }
     
     @Override
-    public List<User> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
 
-        return userRepository.findAll();
-    }
+    List<User> users = userRepository.findAll();
+
+    return users.stream()
+            .map(user -> {
+
+                UserDTO dto = new UserDTO();
+
+                dto.setId(user.getId());
+                dto.setFullName(user.getFullName());
+                dto.setEmail(user.getEmail());
+                dto.setMobile(user.getMobile());
+
+                return dto;
+
+            })
+            .collect(Collectors.toList());
+}
     
     @Override
     public List<Account> getAllAccounts() {
