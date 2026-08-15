@@ -72,7 +72,7 @@ public class SecurityConfig {
                                 "/transaction/**",
                                 "/dashboard/**"
                         )
-                        .hasAuthority("USER", "ADMIN")
+                        .hasAnyAuthority("USER", "ADMIN")
 
                         // User Profile APIs
                         .requestMatchers(
@@ -80,7 +80,7 @@ public class SecurityConfig {
                                 "/user/update/**",
                                 "/user/delete/**"
                         )
-                        .hasAuthority("USER", "ADMIN")
+                        .hasAnyAuthority("USER", "ADMIN")
 
                         // Everything else
                         .anyRequest()
