@@ -63,13 +63,16 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // Admin APIs
-                        .requestMatchers("/admin/**")
+                        .requestMatchers("/admin/**",
+                                         "/transaction/perform"
+                                        )
                         .hasAuthority("ADMIN")
 
                         // User APIs
                         .requestMatchers(
                                 "/account/**",
-                                "/transaction/**",
+                                "/transaction/transfer",
+                                "/transaction/history/**",                               
                                 "/dashboard/**"
                         )
                         .hasAnyAuthority("USER", "ADMIN")
