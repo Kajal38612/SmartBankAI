@@ -23,71 +23,118 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private JwtService jwtService;
 
+
+    // =====================================================
+    // REGISTER USER
+    // =====================================================
+
     @Override
     public User registerUser(User user) {
 
-        Optional<User> existingUser = userRepository.findByEmail(user.getEmail());
+        Optional<User> existingUser =
+                userRepository.findByEmail(user.getEmail());
 
         if (existingUser.isPresent()) {
-            throw new EmailAlreadyExistsException("Email already exists");
+            throw new EmailAlreadyExistsException(
+                    "Email already exists");
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        user.setPassword(
+                passwordEncoder.encode(user.getPassword())
+        );
+
         return userRepository.save(user);
     }
-    
+
+
+    // =====================================================
+    // GET ALL USERS
+    // =====================================================
+
     @Override
     public List<UserDTO> getAllUsers() {
 
         List<User> users = userRepository.findAll();
 
-        return users.stream().map(user -> {
+        return users.stream()
+                .map(user -> {
 
-            UserDTO dto = new UserDTO();
+                    UserDTO dto = new UserDTO();
 
-            dto.setId(user.getId());
-            dto.setFullName(user.getFullName());
-            dto.setEmail(user.getEmail());
-            dto.setMobile(user.getMobile());
+                    dto.setId(user.getId());
+                    dto.setFullName(user.getFullName());
+                    dto.setEmail(user.getEmail());
+                    dto.setMobile(user.getMobile());
 
-            return dto;
+                    return dto;
 
-        }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
     }
-    
+
+
+    // =====================================================
+    // GET USER BY ID
+    // =====================================================
+
     @Override
     public Optional<User> getUserById(Long id) {
+
         return userRepository.findById(id);
     }
+
+
+    // =====================================================
+    // UPDATE USER
+    // =====================================================
+
     @Override
     public Optional<User> updateUser(Long id, User user) {
-    	
 
-        Optional<User> existingUser = userRepository.findById(id);
+        Optional<User> existingUser =
+                userRepository.findById(id);
 
         if (existingUser.isPresent()) {
 
             User updatedUser = existingUser.get();
 
-            updatedUser.setFullName(user.getFullName());
-            updatedUser.setEmail(user.getEmail());
-            updatedUser.setMobile(user.getMobile());
+            updatedUser.setFullName(
+                    user.getFullName()
+            );
 
-            return Optional.of(userRepository.save(updatedUser));
+            updatedUser.setEmail(
+                    user.getEmail()
+            );
+
+            updatedUser.setMobile(
+                    user.getMobile()
+            );
+
+            return Optional.of(
+                    userRepository.save(updatedUser)
+            );
         }
 
         return Optional.empty();
     }
-    
+
+
+    // =====================================================
+    // DELETE USER
+    // =====================================================
+
     @Override
     public Optional<User> deleteUser(Long id) {
 
-        Optional<User> existingUser = userRepository.findById(id);
+        Optional<User> existingUser =
+                userRepository.findById(id);
 
         if (existingUser.isPresent()) {
 
@@ -98,16 +145,33 @@ public class UserServiceImpl implements UserService {
 
         return Optional.empty();
     }
+
+
+    // =====================================================
+    // USER LOGIN
+    // =====================================================
+
     @Override
     public LoginResponse login(LoginRequest request) {
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new InvalidCredentialsException("Invalid Email"));
+        User user = userRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new InvalidCredentialsException(
+                                "Invalid Email"));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new InvalidCredentialsException("Invalid Password");
+
+        // Check password
+        if (!passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword())) {
+
+            throw new InvalidCredentialsException(
+                    "Invalid Password");
         }
 
+
+        // Create USER authorities
         UserDetails userDetails =
                 org.springframework.security.core.userdetails.User
                         .withUsername(user.getEmail())
@@ -115,12 +179,17 @@ public class UserServiceImpl implements UserService {
                         .authorities("USER")
                         .build();
 
-        String token = jwtService.generateToken(userDetails);
 
+        // Generate JWT
+        String token =
+                jwtService.generateToken(userDetails);
+
+
+        // Return token + message + USER role
         return new LoginResponse(
                 token,
-                "Login Successful"
+                "Login Successful",
+                "USER"
         );
     }
-
 }
