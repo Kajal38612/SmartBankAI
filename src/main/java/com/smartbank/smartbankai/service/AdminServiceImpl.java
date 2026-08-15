@@ -68,9 +68,11 @@ public class AdminServiceImpl implements AdminService {
 
         String token = jwtService.generateToken(userDetails);
 
-        return new AdminLoginResponse(
-                token,
-                "Admin Login Successful");
+       return new AdminLoginResponse(
+            token,
+            "Admin Login Successful",
+            "ADMIN");
+        
     }
     @Override
     public AdminResponse getProfile() {
