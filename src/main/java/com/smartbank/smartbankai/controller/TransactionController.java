@@ -47,18 +47,16 @@ public class TransactionController {
     // ADMIN ONLY
     // ==========================================
 
-    @PostMapping("/perform")
-    public ResponseEntity<Transaction> performTransaction(
-            @Valid @RequestBody TransactionRequest request,
-            @RequestHeader("Authorization") String authHeader) {
+   // Deposit / Withdraw
+// ADMIN ONLY
+@PostMapping("/perform")
+public ResponseEntity<Transaction> performTransaction(
+        @Valid @RequestBody TransactionRequest request) {
 
-        // SecurityConfig already allows this endpoint
-        // only for ADMIN.
-
-        return ResponseEntity.ok(
-                transactionService.performTransaction(request)
-        );
-    }
+    return ResponseEntity.ok(
+            transactionService.performTransaction(request)
+    );
+}
 
 
     // ==========================================
