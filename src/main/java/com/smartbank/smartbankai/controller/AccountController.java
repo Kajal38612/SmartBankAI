@@ -47,27 +47,7 @@ public class AccountController {
 
         return accountService.createAccount(request, email);
     }
-    @GetMapping("/my")
-public ResponseEntity<Account> getMyAccount(
-        @RequestHeader("Authorization") String authHeader) {
-
-    String token = authHeader.substring(7);
-
-    String email = jwtService.extractUsername(token);
-
-    User loggedInUser = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-    Optional<Account> account =
-            accountService.getAccountByUserId(loggedInUser.getId());
-
-    if (account.isEmpty()) {
-        return ResponseEntity.notFound().build();
-    }
-
-    return ResponseEntity.ok(account.get());
-}
-
+   
     @GetMapping("/{id}")
     public ResponseEntity<Account> getAccountById(
             @PathVariable Long id,
